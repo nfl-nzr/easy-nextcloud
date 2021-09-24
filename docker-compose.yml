@@ -1,0 +1,49 @@
+version: "2.0"
+services:
+  nextcloud:
+    image: ghcr.io/linuxserver/nextcloud
+    container_name: nextcloud
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+    volumes:
+      - ./nextcloud/config:/config
+      - ./nextcloud/data:/data
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+  mariadb:
+    image: linuxserver/mariadb
+    container_name: mariadb
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_ROOT_PASSWORD=<YOUR_MYSQL_PASSWORD>
+      - TZ=America/New_York
+    volumes:
+      - ./mariadb/config:/config
+    restart: unless-stopped
+  swag:
+    image: linuxserver/swag
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - URL=<YOUR_DUCK_DNS_DOMAIN> # eg: test.duckdns.org
+      - SUBDOMAINS=wildcard
+      - VALIDATION=duckdns
+      - EMAIL=<EMAIL_TO_RENEW_CERT>
+      - DUCKDNSTOKEN=<DDNS_TOKEN>
+    volumes:
+      - ./swag/config:/config
+    ports:
+      - 443:443
+    restart: unless-stopped
+networks:
+    default:
+        external:
+            name: nextcloud
